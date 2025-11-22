@@ -74,8 +74,12 @@ const GenerateRoadmap = () => {
       
       toast.success('Roadmap generated successfully!');
       navigate('/');
-    } catch (error) {
-      toast.error('Failed to generate roadmap. Please try again.');
+    } catch (error: any) {
+      if (error.code === 'ECONNABORTED') {
+        toast.error('Backend is taking longer than expected. It might be starting up. Please try again in a moment.');
+      } else {
+        toast.error('Failed to generate roadmap. Please try again.');
+      }
       console.error(error);
     } finally {
       setIsLoading(false);
