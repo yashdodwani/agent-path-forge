@@ -62,8 +62,8 @@ const GenerateRoadmap = () => {
     setIsLoading(true);
 
     try {
-      // Create conversation first
-      const conversation = await conversationApi.createConversation();
+      // Create conversation with profile data
+      const conversation = await conversationApi.createConversation(formData);
       setConversationId(conversation.conversation_id);
 
       // Generate roadmap
