@@ -35,8 +35,9 @@ export const roadmapApi = {
 };
 
 export const conversationApi = {
-  createConversation: async (): Promise<ConversationResponse> => {
-    const response = await apiClient.post<ConversationResponse>('/conversations');
+  createConversation: async (profile: UserProfile): Promise<ConversationResponse> => {
+    console.log('Sending profile to /conversations:', profile);
+    const response = await apiClient.post<ConversationResponse>('/conversations', profile);
     return response.data;
   },
 
