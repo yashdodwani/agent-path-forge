@@ -9,9 +9,9 @@ ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 
 WORKDIR /app
 
-# Install dependencies
-COPY package.json package-lock.json* ./
-RUN npm ci --silent
+# Install dependencies (copy package files first for better caching)
+COPY package.json package-lock.json ./
+RUN npm ci --only=production=false --silent && npm cache clean --force
 
 # Copy rest of the project and build
 COPY . .

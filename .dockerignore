@@ -1,11 +1,43 @@
+# Dependencies
 node_modules
-dist
-.env
-.env.*
-.vscode
-coverage
 npm-debug.log
+yarn-error.log
+.pnpm-debug.log
+
+# Build outputs
+dist
+build
+.vite
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS files
 .DS_Store
-**/node_modules
-**/.env
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+docs
+
+# Testing
+coverage
+.nyc_output
+
+# Misc
+*.log
+.cache
 
