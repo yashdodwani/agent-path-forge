@@ -51,11 +51,36 @@ export const useAppStore = create<AppState>()(
 
       // Actions
       setModules: (modules) => {
+        // Defensive handling: the backend may return different shapes.
+        // Accept:
+        // - modules as an array
+        // - an object { modules: Module[] }
+        // - an object { roadmap: Module[] }
+        const rawArray: any[] = Array.isArray(modules)
+          ? modules
+          : Array.isArray((modules as any)?.modules)
+          ? (modules as any).modules
+          : Array.isArray((modules as any)?.roadmap)
+          ? (modules as any).roadmap
+          : [];
+
+        // Normalize incoming module objects to the app's Module shape.
+        const modArray: Module[] = rawArray.map((m: any, idx: number) => ({
+          id: m.id ?? idx,
+          title: m.title ?? m.module_name ?? m.module_name ?? `Module ${idx + 1}`,
+          description: m.description ?? m.summary ?? '',
+          estimated_duration: m.estimated_duration ?? m.estimated_time ?? '',
+          skills_covered: m.skills_covered ?? m.skills ?? [],
+          resources: m.resources ?? m.resources_list ?? [],
+          prerequisites: m.prerequisites ?? m.prereq_ids ?? [],
+          order: m.order ?? m.sequence ?? idx,
+        } as Module));
+
         const progress: ModuleProgress = {};
-        modules.forEach(module => {
+        modArray.forEach((module) => {
           progress[module.id] = 'not_started';
         });
-        set({ modules, moduleProgress: progress });
+        set({ modules: modArray, moduleProgress: progress });
       },
 
       setModuleProgress: (moduleId, status) =>

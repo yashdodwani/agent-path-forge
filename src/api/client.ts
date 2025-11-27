@@ -8,7 +8,10 @@ import {
   HealthResponse 
 } from '@/types/api';
 
-const API_BASE_URL = 'https://edupath-jmx6.onrender.com/api/v1';
+// Use a relative base path so in development the Vite proxy (configured in vite.config.ts)
+// can forward requests to the real backend and avoid CORS. In production, set
+// VITE_API_BASE_URL to the full backend URL (e.g. https://edupath-jmx6.onrender.com/api/v1).
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api/v1';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,

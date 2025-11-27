@@ -1,8 +1,10 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { GraduationCap, Activity } from 'lucide-react';
+import { GraduationCap, Activity, Moon, Sun } from 'lucide-react';
 import { healthApi } from '@/api/client';
 import { motion } from 'framer-motion';
+import { useTheme } from 'next-themes';
+import { Button } from '@/components/ui/button';
 
 interface LayoutProps {
   children: ReactNode;
@@ -10,6 +12,7 @@ interface LayoutProps {
 
 export const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
+  const { theme, setTheme } = useTheme();
   const [health, setHealth] = useState<'healthy' | 'unhealthy' | 'checking'>('checking');
 
   useEffect(() => {
@@ -40,8 +43,8 @@ export const Layout = ({ children }: LayoutProps) => {
             >
               <GraduationCap className="h-8 w-8 text-primary" />
             </motion.div>
-            <span className="text-xl font-bold gradient-primary bg-clip-text text-transparent">
-              EduPath AI
+            <span className="text-xl font-bold text-primary">
+              EDUPATH
             </span>
           </Link>
 
@@ -64,16 +67,30 @@ export const Layout = ({ children }: LayoutProps) => {
             </Link>
           </nav>
 
-          {/* Health Status */}
-          <div className="flex items-center gap-2">
-            <Activity className={`h-4 w-4 ${
-              health === 'healthy' ? 'text-success' : 
-              health === 'unhealthy' ? 'text-destructive' : 
-              'text-muted-foreground'
-            }`} />
-            <span className="text-xs text-muted-foreground hidden sm:inline">
-              {health === 'checking' ? 'Checking...' : health}
-            </span>
+          <div className="flex items-center gap-4">
+            {/* Theme Toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="h-9 w-9"
+            >
+              <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              <span className="sr-only">Toggle theme</span>
+            </Button>
+
+            {/* Health Status */}
+            <div className="flex items-center gap-2">
+              <Activity className={`h-4 w-4 ${
+                health === 'healthy' ? 'text-success' : 
+                health === 'unhealthy' ? 'text-destructive' : 
+                'text-muted-foreground'
+              }`} />
+              <span className="text-xs text-muted-foreground hidden sm:inline">
+                {health === 'checking' ? 'Checking...' : health}
+              </span>
+            </div>
           </div>
         </div>
       </header>

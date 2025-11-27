@@ -69,7 +69,23 @@ const GenerateRoadmap = () => {
       // Generate roadmap
       const roadmap = await roadmapApi.generateRoadmap(formData);
       
-      setModules(roadmap.modules);
+      // Defensive extraction: backend may return { modules: [...] } or { roadmap: [...] } or an array
+      const modules = Array.isArray(roadmap)
+        ? roadmap
+        : Array.isArray((roadmap as any).modules)
+        ? (roadmap as any).modules
+        : Array.isArray((roadmap as any).roadmap)
+        ? (roadmap as any).roadmap
+        : null;
+
+      if (!modules) {
+        console.warn('generateRoadmap returned unexpected shape:', roadmap);
+        toast.error('Received unexpected response from backend');
+        setIsLoading(false);
+        return;
+      }
+
+      setModules(modules);
       setUserProfile(formData);
       
       toast.success('Roadmap generated successfully!');

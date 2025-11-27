@@ -46,7 +46,24 @@ const RoadmapView = () => {
     setIsRegenerating(true);
     try {
       const roadmap = await conversationApi.regenerateRoadmap(conversationId);
-      setModules(roadmap.modules);
+
+      // Defensive extraction similar to GenerateRoadmap
+      const modules = Array.isArray(roadmap)
+        ? roadmap
+        : Array.isArray((roadmap as any).modules)
+        ? (roadmap as any).modules
+        : Array.isArray((roadmap as any).roadmap)
+        ? (roadmap as any).roadmap
+        : null;
+
+      if (!modules) {
+        console.warn('regenerateRoadmap returned unexpected shape:', roadmap);
+        toast.error('Received unexpected response from backend');
+        setIsRegenerating(false);
+        return;
+      }
+
+      setModules(modules);
       toast.success('Roadmap regenerated successfully!');
     } catch (error) {
       toast.error('Failed to regenerate roadmap');
