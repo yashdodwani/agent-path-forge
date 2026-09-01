@@ -7,6 +7,7 @@ import { LayoutGrid, Box, MessageSquare, RefreshCw, Loader2 } from 'lucide-react
 import { motion } from 'framer-motion';
 import { useAppStore } from '@/store/useAppStore';
 import { ThreeDGraph } from '@/components/ThreeDGraph';
+import { GraphErrorBoundary } from '@/components/GraphErrorBoundary';
 import { ModuleCard } from '@/components/ModuleCard';
 import { ModuleDetailPanel } from '@/components/ModuleDetailPanel';
 import { ChatPanel } from '@/components/ChatPanel';
@@ -47,7 +48,6 @@ const RoadmapView = () => {
     try {
       const roadmap = await conversationApi.regenerateRoadmap(conversationId);
 
-      // Defensive extraction similar to GenerateRoadmap
       const modules = Array.isArray(roadmap)
         ? roadmap
         : Array.isArray((roadmap as any).modules)
@@ -151,7 +151,11 @@ const RoadmapView = () => {
               </TabsList>
 
               <TabsContent value="3d" className="h-[600px]">
-                {viewMode === '3d' && <ThreeDGraph modules={modules} onModuleClick={handleModuleClick} />}
+                {viewMode === '3d' && (
+                  <GraphErrorBoundary fallbackAction={() => setViewMode('2d')}>
+                    <ThreeDGraph modules={modules} onModuleClick={handleModuleClick} />
+                  </GraphErrorBoundary>
+                )}
               </TabsContent>
 
               <TabsContent value="2d" className="space-y-4 max-h-[600px] overflow-y-auto">

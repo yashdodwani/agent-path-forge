@@ -1,6 +1,6 @@
 import { useRef, useMemo, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Text, Line } from '@react-three/drei';
+import { OrbitControls, Html, Line } from '@react-three/drei';
 import * as THREE from 'three';
 import { Module } from '@/types/api';
 import { useAppStore } from '@/store/useAppStore';
@@ -54,24 +54,29 @@ const Node = ({ module, position, status, onClick, onHover }: NodeProps) => {
           roughness={0.2}
         />
       </mesh>
-      
+
       {status === 'completed' && (
         <mesh position={[0, 0, 0.51]}>
           <ringGeometry args={[0.6, 0.7, 32]} />
           <meshBasicMaterial color="#10B981" side={THREE.DoubleSide} />
         </mesh>
       )}
-      
-      <Text
+
+      <Html
         position={[0, -0.8, 0]}
-        fontSize={0.2}
-        color="white"
-        anchorX="center"
-        anchorY="middle"
-        maxWidth={2}
+        center
+        distanceFactor={10}
+        style={{
+          color: 'white',
+          fontSize: '12px',
+          textAlign: 'center',
+          width: '120px',
+          pointerEvents: 'none',
+          textShadow: '0 1px 3px rgba(0,0,0,0.8)',
+        }}
       >
-        {module.title}
-      </Text>
+        {module.module_name}
+      </Html>
     </group>
   );
 };
@@ -91,7 +96,7 @@ export const ThreeDGraph = ({ modules, onModuleClick }: ThreeDGraphProps) => {
       const angle = (index / modules.length) * Math.PI * 4;
       const radius = 3 + index * 0.3;
       const height = index * 0.8;
-      
+
       return [
         Math.cos(angle) * radius,
         height,
@@ -100,24 +105,20 @@ export const ThreeDGraph = ({ modules, onModuleClick }: ThreeDGraphProps) => {
     });
   }, [modules]);
 
-  // Calculate edges based on prerequisites
+  // Sequential edges (backend doesn't provide explicit prerequisites,
+  // so connect modules in generated order as a reasonable default)
   const edges = useMemo(() => {
     const edgesList: Array<{ start: [number, number, number]; end: [number, number, number] }> = [];
-    
-    modules.forEach((module, index) => {
-      module.prerequisites.forEach((prereqId) => {
-        const prereqIndex = modules.findIndex(m => m.id === prereqId);
-        if (prereqIndex !== -1) {
-          edgesList.push({
-            start: positions[prereqIndex],
-            end: positions[index],
-          });
-        }
+
+    for (let i = 1; i < positions.length; i++) {
+      edgesList.push({
+        start: positions[i - 1],
+        end: positions[i],
       });
-    });
-    
+    }
+
     return edgesList;
-  }, [modules, positions]);
+  }, [positions]);
 
   return (
     <div className="relative w-full h-full">
@@ -128,7 +129,7 @@ export const ThreeDGraph = ({ modules, onModuleClick }: ThreeDGraphProps) => {
         <ambientLight intensity={0.5} />
         <pointLight position={[10, 10, 10]} intensity={1} />
         <pointLight position={[-10, -10, -10]} intensity={0.5} color="#8B5CF6" />
-        
+
         <OrbitControls
           enableDamping
           dampingFactor={0.05}
@@ -164,10 +165,10 @@ export const ThreeDGraph = ({ modules, onModuleClick }: ThreeDGraphProps) => {
       {/* Hover Tooltip */}
       {hoveredModule && (
         <div className="absolute top-4 left-4 glass p-4 rounded-lg max-w-xs">
-          <h4 className="font-semibold mb-1">{hoveredModule.title}</h4>
+          <h4 className="font-semibold mb-1">{hoveredModule.module_name}</h4>
           <p className="text-sm text-muted-foreground">{hoveredModule.description}</p>
           <div className="mt-2 text-xs text-muted-foreground">
-            {hoveredModule.estimated_duration} • {hoveredModule.resources.length} resources
+            {hoveredModule.estimated_time} • {hoveredModule.resources.length} resources
           </div>
         </div>
       )}

@@ -39,24 +39,24 @@ export const ModuleCard = ({ module, status, onClick }: ModuleCardProps) => {
           
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-lg mb-1 line-clamp-2">
-              {module.title}
+              {module.module_name}
             </h3>
-            
+
             <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
               {module.description}
             </p>
-            
+
             <div className="flex items-center gap-4 text-xs text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Clock className="h-3 w-3" />
-                {module.estimated_duration}
+                {module.estimated_time}
               </div>
-              
+
               <div>
                 {module.skills_covered.length} skills
               </div>
             </div>
-            
+
             <div className="flex flex-wrap gap-1 mt-3">
               {module.skills_covered.slice(0, 3).map((skill, index) => (
                 <Badge key={index} variant="secondary" className="text-xs">

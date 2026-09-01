@@ -59,11 +59,11 @@ export const ModuleDetailPanel = ({ module, onClose }: ModuleDetailPanelProps) =
           {/* Header */}
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <h2 className="text-2xl font-bold mb-2">{module.title}</h2>
+              <h2 className="text-2xl font-bold mb-2">{module.module_name}</h2>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <Clock className="h-4 w-4" />
-                  {module.estimated_duration}
+                  {module.estimated_time}
                 </div>
                 <div className="flex items-center gap-1">
                   <BookOpen className="h-4 w-4" />
@@ -71,7 +71,7 @@ export const ModuleDetailPanel = ({ module, onClose }: ModuleDetailPanelProps) =
                 </div>
               </div>
             </div>
-            
+
             <Button variant="ghost" size="icon" onClick={onClose}>
               <X className="h-5 w-5" />
             </Button>
@@ -117,6 +117,12 @@ export const ModuleDetailPanel = ({ module, onClose }: ModuleDetailPanelProps) =
             <p className="text-muted-foreground">{module.description}</p>
           </div>
 
+          {/* Why this module is needed */}
+          <div>
+            <h3 className="font-semibold mb-2">Why This Module</h3>
+            <p className="text-muted-foreground">{module.why_needed}</p>
+          </div>
+
           {/* Skills Covered */}
           <div>
             <h3 className="font-semibold mb-3">Skills Covered</h3>
@@ -142,19 +148,22 @@ export const ModuleDetailPanel = ({ module, onClose }: ModuleDetailPanelProps) =
                         <Badge variant="outline" className="text-xs">
                           {resource.type}
                         </Badge>
-                        {resource.estimated_time && (
-                          <span>{resource.estimated_time}</span>
-                        )}
+                        {resource.duration && <span>{resource.duration}</span>}
                       </div>
+                      {resource.reason && (
+                        <p className="text-xs text-muted-foreground mt-2">
+                          {resource.reason}
+                        </p>
+                      )}
                     </div>
                     <Button
                       variant="ghost"
                       size="icon"
                       asChild
                     >
-                      <a 
-                        href={resource.url} 
-                        target="_blank" 
+                      <a
+                        href={resource.url}
+                        target="_blank"
                         rel="noopener noreferrer"
                       >
                         <ExternalLink className="h-4 w-4" />
@@ -165,16 +174,6 @@ export const ModuleDetailPanel = ({ module, onClose }: ModuleDetailPanelProps) =
               ))}
             </div>
           </div>
-
-          {/* Prerequisites */}
-          {module.prerequisites.length > 0 && (
-            <div>
-              <h3 className="font-semibold mb-2">Prerequisites</h3>
-              <p className="text-sm text-muted-foreground">
-                Complete modules {module.prerequisites.join(', ')} first
-              </p>
-            </div>
-          )}
         </div>
       </motion.div>
     </AnimatePresence>
