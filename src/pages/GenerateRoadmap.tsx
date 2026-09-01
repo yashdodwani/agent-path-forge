@@ -64,10 +64,12 @@ const GenerateRoadmap = () => {
     try {
       // Create conversation with profile data
       const conversation = await conversationApi.createConversation(formData);
+      console.log('createConversation response:', conversation);
       setConversationId(conversation.conversation_id);
 
       // Generate roadmap
       const roadmap = await roadmapApi.generateRoadmap(formData);
+      console.log('roadmapApi.generateRoadmap returned:', roadmap);
       
       // Defensive extraction: backend may return { modules: [...] } or { roadmap: [...] } or an array
       const modules = Array.isArray(roadmap)
@@ -77,6 +79,8 @@ const GenerateRoadmap = () => {
         : Array.isArray((roadmap as any).roadmap)
         ? (roadmap as any).roadmap
         : null;
+
+      console.log('Extracted modules:', modules);
 
       if (!modules) {
         console.warn('generateRoadmap returned unexpected shape:', roadmap);

@@ -151,7 +151,7 @@ const RoadmapView = () => {
               </TabsList>
 
               <TabsContent value="3d" className="h-[600px]">
-                <ThreeDGraph modules={modules} onModuleClick={handleModuleClick} />
+                {viewMode === '3d' && <ThreeDGraph modules={modules} onModuleClick={handleModuleClick} />}
               </TabsContent>
 
               <TabsContent value="2d" className="space-y-4 max-h-[600px] overflow-y-auto">

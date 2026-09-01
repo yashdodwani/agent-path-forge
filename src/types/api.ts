@@ -47,8 +47,8 @@ export interface RoadmapResponse {
 }
 
 export interface ConversationResponse {
-  conversation_id: string;
-  roadmap_id: string;
+  conversation_id: number;
+  roadmap_id: number;
   created_at: string;
 }
 

@@ -13,7 +13,7 @@ interface AppState {
   currentRoadmapId: string | null;
   
   // Conversation data
-  conversationId: string | null;
+  conversationId: number | null;
   messages: Message[];
   
   // User profile
@@ -27,7 +27,7 @@ interface AppState {
   setModules: (modules: Module[]) => void;
   setModuleProgress: (moduleId: number, status: 'not_started' | 'in_progress' | 'completed') => void;
   setCurrentRoadmapId: (id: string | null) => void;
-  setConversationId: (id: string | null) => void;
+  setConversationId: (id: number | null) => void;
   addMessage: (message: Message) => void;
   setMessages: (messages: Message[]) => void;
   setUserProfile: (profile: UserProfile | null) => void;
@@ -47,10 +47,11 @@ export const useAppStore = create<AppState>()(
       messages: [],
       userProfile: null,
       selectedModuleId: null,
-      viewMode: '3d',
+      viewMode: '2d',
 
       // Actions
       setModules: (modules) => {
+        console.log('setModules called with:', modules);
         // Defensive handling: the backend may return different shapes.
         // Accept:
         // - modules as an array
@@ -64,6 +65,8 @@ export const useAppStore = create<AppState>()(
           ? (modules as any).roadmap
           : [];
 
+        console.log('rawArray:', rawArray);
+
         // Normalize incoming module objects to the app's Module shape.
         const modArray: Module[] = rawArray.map((m: any, idx: number) => ({
           id: m.id ?? idx,
@@ -75,6 +78,8 @@ export const useAppStore = create<AppState>()(
           prerequisites: m.prerequisites ?? m.prereq_ids ?? [],
           order: m.order ?? m.sequence ?? idx,
         } as Module));
+
+        console.log('Normalized modArray:', modArray);
 
         const progress: ModuleProgress = {};
         modArray.forEach((module) => {
@@ -113,6 +118,7 @@ export const useAppStore = create<AppState>()(
           modules: [],
           moduleProgress: {},
           currentRoadmapId: null,
+          conversationId: null,
           selectedModuleId: null,
         }),
     }),

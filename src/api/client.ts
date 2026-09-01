@@ -1,24 +1,23 @@
+// typescript
 import axios from 'axios';
-import { 
-  UserProfile, 
-  RoadmapResponse, 
-  ConversationResponse, 
-  Message, 
+import {
+  UserProfile,
+  RoadmapResponse,
+  ConversationResponse,
+  Message,
   ProgressUpdate,
-  HealthResponse 
+  HealthResponse
 } from '@/types/api';
 
-// Use a relative base path so in development the Vite proxy (configured in vite.config.ts)
-// can forward requests to the real backend and avoid CORS. In production, set
-// VITE_API_BASE_URL to the full backend URL (e.g. https://edupath-jmx6.onrender.com/api/v1).
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api/v1';
+// Force the backend base URL to the provided address
+const API_BASE_URL = 'http://127.0.0.1:8000/';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 300000, // 300 seconds for cold starts on Render
+  timeout: 600000, // 600 seconds for cold starts and multi-step generation
 });
 
 // Request interceptor for error handling
@@ -32,28 +31,29 @@ apiClient.interceptors.response.use(
 
 export const roadmapApi = {
   generateRoadmap: async (profile: UserProfile): Promise<RoadmapResponse> => {
-    const response = await apiClient.post<RoadmapResponse>('/generate-roadmap', profile);
+    const response = await apiClient.post<RoadmapResponse>('/api/v1/generate-roadmap', profile);
+    console.log('generateRoadmap response:', response.data);
     return response.data;
   },
 };
 
 export const conversationApi = {
   createConversation: async (profile: UserProfile): Promise<ConversationResponse> => {
-    console.log('Sending profile to /conversations:', profile);
-    const response = await apiClient.post<ConversationResponse>('/conversations', profile);
+    console.log('Sending profile to /api/v1/sessions:', profile);
+    const response = await apiClient.post<ConversationResponse>('/api/v1/sessions', profile);
     return response.data;
   },
 
   sendMessage: async (conversationId: string, message: Message): Promise<void> => {
-    await apiClient.post(`/conversations/${conversationId}/messages`, message);
+    await apiClient.post(`/api/v1/sessions/${conversationId}/messages`, message);
   },
 
   updateProgress: async (conversationId: string, progress: ProgressUpdate): Promise<void> => {
-    await apiClient.post(`/conversations/${conversationId}/progress`, progress);
+    await apiClient.post(`/api/v1/sessions/${conversationId}/progress`, progress);
   },
 
   regenerateRoadmap: async (conversationId: string): Promise<RoadmapResponse> => {
-    const response = await apiClient.post<RoadmapResponse>(`/conversations/${conversationId}/regenerate`);
+    const response = await apiClient.post<RoadmapResponse>(`/api/v1/sessions/${conversationId}/regenerate`);
     return response.data;
   },
 };
