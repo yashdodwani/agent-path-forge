@@ -93,7 +93,11 @@ export interface GenerateFromDocsPayload {
   target_role: string;
   preferred_style: UserProfile["preferred_style"];
   resume: File;
-  /** Provide job_url OR jd_text (or both — jd_text wins if both given). */
+  /**
+   * Provide exactly one JD source. If more than one is set, the backend
+   * prefers jd_text > jd_file > job_url.
+   */
   job_url?: string;
   jd_text?: string;
+  jd_file?: File;
 }

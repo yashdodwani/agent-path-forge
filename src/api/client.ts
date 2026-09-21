@@ -37,11 +37,11 @@ export const roadmapApi = {
   },
 
   /**
-   * Resume + Job Description (URL or pasted text) -> gap analysis ->
-   * dynamic roadmap. Sent as multipart/form-data since a resume file is
-   * involved. Provide either job_url or jd_text on the payload (jd_text
-   * wins if both are set, since scraping a job URL is best-effort and a
-   * pasted JD is more reliable).
+   * Resume + Job Description -> gap analysis -> dynamic roadmap.
+   * Sent as multipart/form-data since file uploads are involved.
+   * Provide exactly one JD source on the payload: job_url, jd_text, or
+   * jd_file. If more than one is set, the backend prefers
+   * jd_text > jd_file > job_url.
    */
   generateRoadmapFromDocs: async (payload: GenerateFromDocsPayload): Promise<RoadmapResponse> => {
     const form = new FormData();
@@ -51,6 +51,7 @@ export const roadmapApi = {
     form.append('resume', payload.resume);
     if (payload.job_url) form.append('job_url', payload.job_url);
     if (payload.jd_text) form.append('jd_text', payload.jd_text);
+    if (payload.jd_file) form.append('jd_file', payload.jd_file);
 
     const response = await apiClient.post<RoadmapResponse>(
       '/api/v1/generate-roadmap-from-docs',

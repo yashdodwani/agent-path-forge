@@ -21,10 +21,11 @@ import { toast } from 'sonner';
 import { UserProfile } from '@/types/api';
 
 type Mode = 'manual' | 'docs';
-type JdMode = 'url' | 'text';
+type JdMode = 'url' | 'text' | 'file';
 
-const ACCEPTED_RESUME_TYPES = ['.pdf', '.docx', '.txt', '.md'];
+const ACCEPTED_DOC_TYPES = ['.pdf', '.docx', '.txt', '.md'];
 const MAX_RESUME_SIZE_MB = 10;
+const MAX_JD_FILE_SIZE_MB = 10;
 
 const GenerateRoadmap = () => {
   const navigate = useNavigate();
@@ -66,28 +67,42 @@ const GenerateRoadmap = () => {
   const [docsTargetRole, setDocsTargetRole] = useState('');
   const [docsPreferredStyle, setDocsPreferredStyle] = useState<UserProfile['preferred_style']>('Video');
   const [resumeFile, setResumeFile] = useState<File | null>(null);
+
   const [jdMode, setJdMode] = useState<JdMode>('url');
   const [jobUrl, setJobUrl] = useState('');
   const [jdText, setJdText] = useState('');
+  const [jdFile, setJdFile] = useState<File | null>(null);
 
-  const handleResumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const validateAndSetFile = (
+    file: File | undefined,
+    maxSizeMb: number,
+    setFile: (f: File | null) => void,
+    inputEl: HTMLInputElement
+  ) => {
     if (!file) {
-      setResumeFile(null);
+      setFile(null);
       return;
     }
     const ext = '.' + file.name.split('.').pop()?.toLowerCase();
-    if (!ACCEPTED_RESUME_TYPES.includes(ext)) {
-      toast.error(`Unsupported file type. Please upload: ${ACCEPTED_RESUME_TYPES.join(', ')}`);
-      e.target.value = '';
+    if (!ACCEPTED_DOC_TYPES.includes(ext)) {
+      toast.error(`Unsupported file type. Please upload: ${ACCEPTED_DOC_TYPES.join(', ')}`);
+      inputEl.value = '';
       return;
     }
-    if (file.size > MAX_RESUME_SIZE_MB * 1024 * 1024) {
-      toast.error(`File too large. Max size is ${MAX_RESUME_SIZE_MB}MB.`);
-      e.target.value = '';
+    if (file.size > maxSizeMb * 1024 * 1024) {
+      toast.error(`File too large. Max size is ${maxSizeMb}MB.`);
+      inputEl.value = '';
       return;
     }
-    setResumeFile(file);
+    setFile(file);
+  };
+
+  const handleResumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    validateAndSetFile(e.target.files?.[0], MAX_RESUME_SIZE_MB, setResumeFile, e.target);
+  };
+
+  const handleJdFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    validateAndSetFile(e.target.files?.[0], MAX_JD_FILE_SIZE_MB, setJdFile, e.target);
   };
 
   // ---- Submit: manual profile flow ----
@@ -159,6 +174,10 @@ const GenerateRoadmap = () => {
       toast.error('Please paste the job description text');
       return;
     }
+    if (jdMode === 'file' && !jdFile) {
+      toast.error('Please upload the job description file');
+      return;
+    }
 
     setIsLoading(true);
 
@@ -170,6 +189,7 @@ const GenerateRoadmap = () => {
         resume: resumeFile,
         job_url: jdMode === 'url' ? jobUrl.trim() : undefined,
         jd_text: jdMode === 'text' ? jdText.trim() : undefined,
+        jd_file: jdMode === 'file' ? jdFile ?? undefined : undefined,
       });
 
       const modules = Array.isArray(roadmap)
@@ -428,7 +448,7 @@ const GenerateRoadmap = () => {
                 <input
                   id="resume_upload"
                   type="file"
-                  accept={ACCEPTED_RESUME_TYPES.join(',')}
+                  accept={ACCEPTED_DOC_TYPES.join(',')}
                   onChange={handleResumeChange}
                   className="hidden"
                   required
@@ -438,7 +458,7 @@ const GenerateRoadmap = () => {
               {/* Job description source toggle */}
               <div className="space-y-2">
                 <Label>Job Description *</Label>
-                <div className="flex gap-2 mb-2">
+                <div className="flex gap-2 mb-2 flex-wrap">
                   <Button
                     type="button"
                     size="sm"
@@ -459,9 +479,19 @@ const GenerateRoadmap = () => {
                     <FileText className="h-3.5 w-3.5" />
                     Paste JD Text
                   </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={jdMode === 'file' ? 'default' : 'outline'}
+                    onClick={() => setJdMode('file')}
+                    className="gap-1"
+                  >
+                    <Upload className="h-3.5 w-3.5" />
+                    Upload JD File
+                  </Button>
                 </div>
 
-                {jdMode === 'url' ? (
+                {jdMode === 'url' && (
                   <>
                     <Input
                       value={jobUrl}
@@ -470,16 +500,48 @@ const GenerateRoadmap = () => {
                     />
                     <p className="text-xs text-muted-foreground">
                       Some job boards (LinkedIn, Workday, etc.) block automated fetching — if this fails, switch to
-                      "Paste JD Text" instead.
+                      "Paste JD Text" or "Upload JD File" instead.
                     </p>
                   </>
-                ) : (
+                )}
+
+                {jdMode === 'text' && (
                   <Textarea
                     value={jdText}
                     onChange={(e) => setJdText(e.target.value)}
                     placeholder="Paste the full job description here..."
                     rows={8}
                   />
+                )}
+
+                {jdMode === 'file' && (
+                  <>
+                    <label
+                      htmlFor="jd_file_upload"
+                      className="flex items-center gap-3 border border-dashed rounded-md px-4 py-6 cursor-pointer hover:border-primary transition-colors"
+                    >
+                      <Upload className="h-5 w-5 text-muted-foreground shrink-0" />
+                      <div className="min-w-0">
+                        {jdFile ? (
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4 shrink-0" />
+                            <span className="truncate text-sm">{jdFile.name}</span>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">
+                            Click to upload the job posting as PDF, DOCX, or TXT (max {MAX_JD_FILE_SIZE_MB}MB)
+                          </span>
+                        )}
+                      </div>
+                    </label>
+                    <input
+                      id="jd_file_upload"
+                      type="file"
+                      accept={ACCEPTED_DOC_TYPES.join(',')}
+                      onChange={handleJdFileChange}
+                      className="hidden"
+                    />
+                  </>
                 )}
               </div>
 
