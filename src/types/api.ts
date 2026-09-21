@@ -39,10 +39,28 @@ export interface AgentLog {
   timestamp: string;
 }
 
+// --- Gap Analysis (resume + JD mode) ---
+
+export interface GapSkill {
+  skill: string;
+  status: "Missing" | "Partial" | "Met";
+  importance: "Critical" | "High" | "Medium";
+  note?: string;
+}
+
+export interface GapAnalysis {
+  matched_skills: string[];
+  gaps: GapSkill[];
+  resume_summary?: string;
+  jd_summary?: string;
+}
+
 export interface RoadmapResponse {
   roadmap: Module[];
   market_analysis?: MarketTrend[];
   agent_logs?: AgentLog[];
+  gap_analysis?: GapAnalysis;
+  roadmap_id?: number;
 }
 
 export interface ConversationResponse {
@@ -66,4 +84,16 @@ export interface ProgressUpdate {
 export interface HealthResponse {
   status: "healthy" | "unhealthy";
   timestamp: string;
+}
+
+// --- Resume + Job Description intake (new flow) ---
+
+export interface GenerateFromDocsPayload {
+  name: string;
+  target_role: string;
+  preferred_style: UserProfile["preferred_style"];
+  resume: File;
+  /** Provide job_url OR jd_text (or both — jd_text wins if both given). */
+  job_url?: string;
+  jd_text?: string;
 }
