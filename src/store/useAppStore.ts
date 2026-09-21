@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Module, Message, UserProfile } from '@/types/api';
+import { Module, Message, UserProfile, GapAnalysis } from '@/types/api';
 
 interface ModuleProgress {
   [moduleId: number]: 'not_started' | 'in_progress' | 'completed';
@@ -11,18 +11,21 @@ interface AppState {
   modules: Module[];
   moduleProgress: ModuleProgress;
   currentRoadmapId: string | null;
-  
+
   // Conversation data
   conversationId: number | null;
   messages: Message[];
-  
+
   // User profile
   userProfile: UserProfile | null;
-  
+
+  // Gap analysis (populated only when roadmap was generated from resume + JD)
+  gapAnalysis: GapAnalysis | null;
+
   // UI state
   selectedModuleId: number | null;
   viewMode: '3d' | '2d';
-  
+
   // Actions
   setModules: (modules: Module[]) => void;
   setModuleProgress: (moduleId: number, status: 'not_started' | 'in_progress' | 'completed') => void;
@@ -31,6 +34,7 @@ interface AppState {
   addMessage: (message: Message) => void;
   setMessages: (messages: Message[]) => void;
   setUserProfile: (profile: UserProfile | null) => void;
+  setGapAnalysis: (gapAnalysis: GapAnalysis | null) => void;
   setSelectedModuleId: (id: number | null) => void;
   setViewMode: (mode: '3d' | '2d') => void;
   resetRoadmap: () => void;
@@ -46,6 +50,7 @@ export const useAppStore = create<AppState>()(
       conversationId: null,
       messages: [],
       userProfile: null,
+      gapAnalysis: null,
       selectedModuleId: null,
       viewMode: '2d',
 
@@ -97,22 +102,24 @@ export const useAppStore = create<AppState>()(
         })),
 
       setCurrentRoadmapId: (id) => set({ currentRoadmapId: id }),
-      
+
       setConversationId: (id) => set({ conversationId: id }),
-      
+
       addMessage: (message) =>
         set((state) => ({
           messages: [...state.messages, { ...message, timestamp: new Date().toISOString() }],
         })),
-      
+
       setMessages: (messages) => set({ messages }),
-      
+
       setUserProfile: (profile) => set({ userProfile: profile }),
-      
+
+      setGapAnalysis: (gapAnalysis) => set({ gapAnalysis }),
+
       setSelectedModuleId: (id) => set({ selectedModuleId: id }),
-      
+
       setViewMode: (mode) => set({ viewMode: mode }),
-      
+
       resetRoadmap: () =>
         set({
           modules: [],
@@ -120,6 +127,7 @@ export const useAppStore = create<AppState>()(
           currentRoadmapId: null,
           conversationId: null,
           selectedModuleId: null,
+          gapAnalysis: null,
         }),
     }),
     {
@@ -130,6 +138,7 @@ export const useAppStore = create<AppState>()(
         currentRoadmapId: state.currentRoadmapId,
         conversationId: state.conversationId,
         userProfile: state.userProfile,
+        gapAnalysis: state.gapAnalysis,
         viewMode: state.viewMode,
       }),
     }
